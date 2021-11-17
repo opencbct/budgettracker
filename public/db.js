@@ -1,10 +1,10 @@
 "use strict";
 
-const pendingObjectStoreName = `pending`;
+
 // creating reference var to db
 const request = indexedDB.open("budget", 1);
-
-
+//creating var for the pending status for the store
+const pendingObjectStoreName = `pending`;
 // runs whenever a new db event is created
 request.onupgradeneeded = (event)=> {
     console.log(request);
@@ -28,17 +28,17 @@ request.onsuccess = event => {
 };
 
 
-
+//checks the db for a transaction to the store
 function checkDatabase() {
     const db = request.result;
-    // open a transaction on your pending db
+    // open a transaction
     let transaction = db.transaction([pendingObjectStoreName], `readwrite`);
-    // access your pending object store
+    // open object store
     let store = transaction.objectStore(pendingObjectStoreName);
-
     // get all records from store and set to a variable
     const getAll = store.getAll();
 
+        // getting all successful post methods
     getAll.onsuccess = () => {
         if (getAll.result.length > 0) {
             fetch(`/api/transaction/bulk`, {
@@ -49,34 +49,25 @@ function checkDatabase() {
                     "Content-Type": `application/json`
                 }
             })
+            //promise to open a transaction to the store and any pending transaction, and clearing the transaction
                 .then(response => response.json())
                 .then(() => {
-                    // if successful, open a transaction on your pending db
                     transaction = db.transaction([pendingObjectStoreName], `readwrite`);
-
-                    // access your pending object store
                     store = transaction.objectStore(pendingObjectStoreName);
-
-                    // clear all items in your store
                     store.clear();
                 });
         }
     };
 }
 
-// eslint-disable-next-line no-unused-vars
+//the saveRecord  function saves the record to the db for readwrite access
 function saveRecord(record) {
     const db = request.result;
-
-    // create a transaction on the pending db with readwrite access
     const transaction = db.transaction([pendingObjectStoreName], `readwrite`);
-
-    // access your pending object store
     const store = transaction.objectStore(pendingObjectStoreName);
-
-    // add record to your store with add method.
+    // add record 
     store.add(record);
 }
 
-// listen for app coming back online
+// listen for app 
 window.addEventListener(`online`, checkDatabase);
