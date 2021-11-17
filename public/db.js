@@ -1,38 +1,38 @@
 "use strict";
 
 const pendingObjectStoreName = `pending`;
+// creating reference var to db
+const request = indexedDB.open("budget", 1);
 
-// create a new db request for a "budget" database.
-const request = indexedDB.open(`budget`, 2);
 
-request.onupgradeneeded = event => {
+// runs whenever a new db event is created
+request.onupgradeneeded = (event)=> {
+    console.log(request);
     const db = request.result;
-
-    // create object store called "pending" and set autoIncrement to true
-    // const db = event.target.result;
     console.log(event);
 
     if (!db.objectStoreNames.contains(pendingObjectStoreName)) {
         db.createObjectStore(pendingObjectStoreName, { autoIncrement: true });
     }
 };
-
+// if db is already created then logs err of event
+request.onerror = event => console.error(event);
+// if success logging the event,
 request.onsuccess = event => {
-    console.log(`Success! ${event.type}`);
-    // check if app is online before reading from db
+    console.log(`${event.type}`);
+    db = event.target.result;
+    //if db connect is online
     if (navigator.onLine) {
-        checkDatabase();
+        console.log("online");
     }
 };
 
-request.onerror = event => console.error(event);
+
 
 function checkDatabase() {
     const db = request.result;
-
     // open a transaction on your pending db
     let transaction = db.transaction([pendingObjectStoreName], `readwrite`);
-
     // access your pending object store
     let store = transaction.objectStore(pendingObjectStoreName);
 

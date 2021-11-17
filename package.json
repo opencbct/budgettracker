@@ -16,12 +16,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Ethanlloyd21/Budget-Tracker.git"
+    "url": "git+https://github.com/opencbct/Budget-Tracker.git"
   },
   
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Ethanlloyd21/Budget-Tracker/issues"
+    "url": "https://github.com/opencbct/Budget-Tracker/issues"
   },
-  "homepage": "https://github.com/Ethanlloyd21/Budget-Tracker#readme"
+  "homepage": "https://github.com/opencbct/Budget-Tracker#readme"
 }
