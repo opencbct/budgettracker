@@ -1,8 +1,7 @@
 'use strict'
 
-console.log('This is your service-worker.js file!');
-
 const FILES_TO_CACHE = [
+    "/",
     `/db.js`,
     `/index.html`,
     `/index.js`,
@@ -12,26 +11,24 @@ const FILES_TO_CACHE = [
 ];
 
 const STATIC_CACHE = `static-cache-v1`;
-const RUNTIME_CACHE = `runtime-cache`;
+const DATA_CACHE_NAME = `data-cache-v1`;
 
 self.addEventListener(`install`, event => {
+    //install steps for cahce files
     event.waitUntil(
-        caches
-            .open(STATIC_CACHE)
-            .then(cache => cache.addAll(FILES_TO_CACHE))
-            .then(() => self.skipWaiting())
+        caches.open(STATIC_CACHE)
+            .then(cache => cache.addAll(FILES_TO_CACHE))     
     );
 });
 
+//ativated the cache and waiting untile the request has been fullfilled
 self.addEventListener(`activate`, event => {
-    const currentCaches = [STATIC_CACHE, RUNTIME_CACHE];
-    event.waitUntil(
-        caches
-            .keys()
-            .then(cacheNames =>
-                // return array of cache names that are old to delete
+    const currentCaches = [STATIC_CACHE, DATA_CACHE_NAME];
+    event.waitUntil(caches
+            .keys().then(cacheNames =
                 cacheNames.filter(cacheName => !currentCaches.includes(cacheName))
             )
+            //promise to delete all cache when needed
             .then(cachesToDelete =>
                 Promise.all(
                     cachesToDelete.map(cacheToDelete => caches.delete(cacheToDelete))
@@ -41,6 +38,7 @@ self.addEventListener(`activate`, event => {
     );
 });
 
+//fetching the event with the correct url if not GET then retrn the method
 self.addEventListener(`fetch`, event => {
     if (
         event.request.method !== `GET` ||
@@ -49,10 +47,10 @@ self.addEventListener(`fetch`, event => {
         event.respondWith(fetch(event.request));
         return;
     }
-
+    //checking to see if the url is as below then caching the data
     if (event.request.url.includes(`/api/transaction`)) {
         event.respondWith(
-            caches.open(RUNTIME_CACHE).then(cache =>
+            caches.open(DATA_CACHE_NAME).then(cache =>
                 fetch(event.request)
                     .then(response => {
                         cache.put(event.request, response.clone());
@@ -69,9 +67,9 @@ self.addEventListener(`fetch`, event => {
             if (cachedResponse) {
                 return cachedResponse;
             }
-
+//return cache even when offline, then put the in the req
             return caches
-                .open(RUNTIME_CACHE)
+                .open(DATA_CACHE_NAME)
                 .then(cache =>
                     fetch(event.request).then(response =>
                         cache.put(event.request, response.clone()).then(() => response)
